@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 
+#include <QSqlQuery>
 #include <QSql>
 #include <QSqlDatabase>
 #include <QDebug>
@@ -14,11 +15,12 @@
 
 #include "product.h"
 
+class product;
 using namespace std;
 
 typedef vector<product>::iterator iter;
 
-class sqlfunctions{ 
+class sqlfunctions:public QObject{
     Q_OBJECT
 
     public:
@@ -34,6 +36,7 @@ class sqlfunctions{
         void        removeFromCart(product myProduct);
         void        showCart();
         void        clearCart();
+        void        disempowerUser();
         void        changeAmount(product myProduct, int newAmount);
         bool        checkStock();
         int         checkBalance();
@@ -47,6 +50,7 @@ class sqlfunctions{
         bool                isLogin;
         bool                isAdminLoggedIn;
         int                 uid;
+        QSqlDatabase        db;
 };
 
 #endif // SQLFUNCTIONS_H

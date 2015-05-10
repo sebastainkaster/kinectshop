@@ -1,7 +1,7 @@
 #include "sqlfunctions.h"
 
 sqlfunctions::sqlfunctions(){
-    QSqlDatabase db = QSqlDatabase::addDatabase("QMYSQL");
+    db = QSqlDatabase::addDatabase("QMYSQL");
     db.setHostName("kinectsrv.lfb.rwth-aachen.de");
     db.setDatabaseName("kinectshop2015");
     db.setUserName("kinectshopClient");
@@ -28,19 +28,9 @@ product sqlfunctions::isAlreadyInCart(product myProduct){
     iter cursor = find(cart.begin(), cart.end(), myProduct.getPid());
     if(cursor!=cart.end()){
 
-        product* newProduct = new product;
-
-        int newPid = myProduct.getPid();
-        newProduct->setPid(newPid);
-
         int newAmount = myProduct.getAmount() + cursor->getAmount();
-        newProduct->setAmount(newAmount);
-
-        string newTitle = myProduct.getTitle();
-        newProduct->setTitle(newTitle);
-
+        myProduct.setAmount(newAmount);
         cart.erase(cursor);
-        return *newProduct;
     }
     return myProduct;
 }
@@ -64,6 +54,7 @@ void sqlfunctions::showCart(){
         cout    <<  "</tr> "    <<  endl;
     }
     cout    <<  "</table>"   << endl;
+
 }
 
 // Leert den Einkaufswagen
@@ -86,11 +77,11 @@ bool sqlfunctions::checkStock(){
     int diff, stock;
     for(iter cursor = cart.begin();cursor!=cart.end();cursor++){
         query.prepare("SELECT stock FROM products WHERE id = :input");
-        query.bind(":input", cursor->getPid);
+        query.bindValue(":input", cursor->getPid());
         query.exec();
-        // Need to save result of query into variable stock
-        stock = ??;
-        diff = stock - cursor->getAmount;
+        // Need to save result of query into variable stock       
+        stock = 0; // MUSS NOCH KORRIGIERT WERDEN
+        diff = stock - cursor->getAmount();
         if(diff < 0){
             return false;
         }
@@ -169,12 +160,12 @@ void sqlfunctions::disempowerUser(){
 void sqlfunctions::login(string username, string password){
     // Prüfen, ob Username-Password-Kombination existiert
     // Eventuell einen Timeout bei mehrfacher falscher Eingabe einfügen!
-    if(){
+    if(1){ //MUSS NOCH KORRIGIERT WERDEN
         // Prüfen ob ein Admin eingeloggt ist
         // Setze entsprechend isAdminLoggedIn auf true bzw. false
         // Wenn ja sende Signal adminLoggedIn aus
         // Gib Admin-Rechte.
-        if(){
+        if(1){ //MUSS NOCH KORRIGIERT WERDEN
             emit adminLoggedIn();
             void empowerUser();
         }
@@ -185,3 +176,4 @@ void sqlfunctions::login(string username, string password){
         msgBox.exec();
     }
 }
+

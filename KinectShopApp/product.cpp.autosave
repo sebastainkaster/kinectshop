@@ -47,6 +47,5 @@ void product::operator =(const product &theProduct)
 //Operator um zwei Produkte zu vergleichen, liefert true falls gleich
 bool product::operator == (const product& theProduct) const
 {
-
     return true;
 }
