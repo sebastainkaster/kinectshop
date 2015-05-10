@@ -38,7 +38,7 @@ class sqlfunctions:public QObject{
         void        clearCart();
         void        disempowerUser();
         void        changeAmount(product myProduct, int newAmount);
-        bool        checkStock();
+        int        checkStock();
         int         checkBalance();
         void        purchase();
         void        registerUser(string username, string password);

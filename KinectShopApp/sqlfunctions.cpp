@@ -72,7 +72,7 @@ void sqlfunctions::changeAmount(product myProduct, int newAmount){
 }
 
 // Prüft für jede Ware im Warenkorb, ob noch genug Waren vorhanden sind
-bool sqlfunctions::checkStock(){
+int sqlfunctions::checkStock(){
     QSqlQuery query;
     int diff, stock;
     for(iter cursor = cart.begin();cursor!=cart.end();cursor++){
@@ -80,13 +80,11 @@ bool sqlfunctions::checkStock(){
         query.bindValue(":input", cursor->getPid());
         query.exec();
         // Need to save result of query into variable stock       
-        stock = 0; // MUSS NOCH KORRIGIERT WERDEN
+        query.next();
+        stock = query.value(0).toInt();
         diff = stock - cursor->getAmount();
-        if(diff < 0){
-            return false;
-        }
     }
-    return true;
+    return diff;
 }
 
 // Prüft, ob der Benutzer ausreichend Guthaben zum Kauf hat.
@@ -104,26 +102,78 @@ int sqlfunctions::checkBalance(){
 
 // Die Bezahlfunktion
 void sqlfunctions::purchase(){
+    QSqlQuery query;
     // Überprüfe, ob User eingeloogt ist.
     if(isLogin){
         int hasEnoughMoney = checkBalance();
         // Überprüfe ob User genug Guthaben hat.
         if(hasEnoughMoney >= 0){
-            if(checkStock()){
-                // SQL-Befehle für den Bezahlvorgang
-                // Buchungstabelle
+            int diff = checkStock();
+            if(diff >= 0){
+                for(iter cursor = cart.begin(); cursor != cart.end(); ++cursor){
 
-                // Userguthaben abbuchen
+                    int pid = cursor->getPid();
+                    int amount = cursor->getAmount();
 
-                // Produktvorrat reduzieren
+                    // SQL-Befehle für den Bezahlvorgang
+                    // Buchungstabelle
+                    // größte Buchungsnummer ermitteln
+                    query.prepare("SELECT MAX(id) FROM bookings");
+                    query.exec();
+                    query.next();
+                    int insertId = query.value(0).toInt();
+                    // Buchungsnummer um 1 erhöhen
+                    insertId++;
+                    query.prepare("INSERT INTO bookings (id,uid,pid,amount) VALUES (:id, :uid, :pid, :amount)");
+                    query.bindValue(":id", insertId);
+                    query.bindValue(":uid", uid);
+                    query.bindValue(":pid", pid);
+                    query.bindValue(":amount", amount);
+                    query.exec();
 
-                // Signal: Einkauf abgeschlossen
+                    // Kosten ausrechnen
+                    query.prepare("SELECT price FROM products WHERE id =:pid");
+                    query.bindValue(":pid", pid);
+                    query.exec();
+
+                    query.next();
+                    double price = query.value(0).toDouble();
+                    double cost = (double)amount*price;
+
+                    query.prepare("SELECT balance FROM users WHERE id = :uid");
+                    query.bindValue(":uid", uid);
+                    query.exec();
+                    query.next();
+                    double balance = query.value(0).toDouble();
+                    double newBalance = balance - cost;
+
+                    // Userguthaben abbuchen
+                    query.prepare("UPDATE users SET balance=:newBalance WHERE id =:uid");
+                    query.bindValue(":newBalance", newBalance);
+                    query.bindValue(":uid", uid);
+                    query.exec();
+
+                    // Produktvorrat reduzieren
+                    query.prepare("SELECT stock FROM products WHERE id = :pid");
+                    query.bindValue(":pid", pid);
+                    query.exec();
+                    query.next();
+                    int stock = query.value(0).toInt();
+                    int newStock = stock - amount;
+
+                    query.prepare("UPDATE products SET stock=:newStock WHERE id=:pid");
+                    query.bindValue(":newStock", newStock);
+                    query.bindValue(":pid", pid);
+                    query.exec();
+                }
+                // Signal: Einkauf abgeschlossen, Einkaufswagen leeren
                 emit purchaseDone(cart);
+                clearCart();
             }
             else{
                 // Füge noch die Ausgabe der (tlw.) nicht lieferbare Waren und deren vorhandene Menge
                 QMessageBox msgBox;
-                msgBox.setText("Es sind leider nicht genug Waren vorhanden!");
+                msgBox.setText("Es sind nicht genug Waren vorhanden. Verringern Sie ihre Bestellung um "+QString::number(diff*(-1))+" Einheiten.");
                 msgBox.exec();
             }
         }

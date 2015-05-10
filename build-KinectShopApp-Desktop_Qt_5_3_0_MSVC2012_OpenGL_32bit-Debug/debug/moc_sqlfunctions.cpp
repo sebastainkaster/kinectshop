@@ -110,7 +110,7 @@ static const uint qt_meta_data_sqlfunctions[] = {
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void, 0x80000000 | 7, QMetaType::Int,    8,   15,
-    QMetaType::Bool,
+    QMetaType::Int,
     QMetaType::Int,
     QMetaType::Void,
     QMetaType::Void, 0x80000000 | 20, 0x80000000 | 20,   21,   22,
@@ -135,8 +135,8 @@ void sqlfunctions::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id
         case 6: _t->clearCart(); break;
         case 7: _t->disempowerUser(); break;
         case 8: _t->changeAmount((*reinterpret_cast< product(*)>(_a[1])),(*reinterpret_cast< int(*)>(_a[2]))); break;
-        case 9: { bool _r = _t->checkStock();
-            if (_a[0]) *reinterpret_cast< bool*>(_a[0]) = _r; }  break;
+        case 9: { int _r = _t->checkStock();
+            if (_a[0]) *reinterpret_cast< int*>(_a[0]) = _r; }  break;
         case 10: { int _r = _t->checkBalance();
             if (_a[0]) *reinterpret_cast< int*>(_a[0]) = _r; }  break;
         case 11: _t->purchase(); break;
